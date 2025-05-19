@@ -16,7 +16,7 @@ SELECT
     CASE
         WHEN P.is_regular_savings = 1 THEN 'Savings'
         WHEN P.is_a_fund = 1 THEN 'Investment'
-    END AS type,
+    END AS types,
     S.transaction_date AS last_transaction_date,
 
 -- Calculating inactivity dates as the number of days between the last transaction date and the current date
@@ -27,11 +27,17 @@ JOIN
     latest_transactions LT ON S.owner_id = LT.owner_id AND S.transaction_date = LT.last_transaction_date
 LEFT JOIN
     plans_plan P ON P.id = S.plan_id
+LEFT JOIN
+	users_customuser U ON U.id = S.owner_id
 WHERE
 
 -- specifying only transactions that are either a savings plan or an investment plan
     (P.is_a_fund = 1 OR P.is_regular_savings = 1)
     
---  Specifying only active accounts (savings or investments) with no transactions in the last 1 year (365 days).
+--  Specifying only active accounts
+	AND
+     U.is_active = 1
+ 
+--  Specifying only account transactions in the last 1 year (365 days).
     AND
     DATEDIFF(CURDATE(), S.transaction_date) >  365;
