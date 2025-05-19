@@ -10,6 +10,8 @@ An Exist operator is used to check if the user has at least one savings account 
 I had initially attempted to use joins and common table expressions to build the query, but that solution was unoptimised, took a long time to run due to the size of the table, and returned an error.
 
 
+
+
 ## Question 2
 Created this query  in  2 steps, first was a  month analysis CTE that performed the following tasks:
 1. Time Period Identification:
@@ -33,12 +35,20 @@ Created this query  in  2 steps, first was a  month analysis CTE that performed 
   b. Links to customer information using a LEFT JOIN to users_customuser
   c. This preserves all transactions, even if user information might be incomplete
 
-6. Groups all metrics by the month-year identifier
+6. Group all metrics by the month-year identifier
 
 Second step, aggregated the query by category
 
 ### Challenges
 I struggled to understand what was meant by per customer, per month, because the data covered multiple years. So I was unsure if I was to aggregate all the months across all the years at first
+
+
+## Question 3
+This query was built in three steps using 2 CTEs. The first CTE identifies all active savings and investment accounts, the second finds the most recent transaction for each account and the third and main query identifies inactive accounts
+
+
+
+## Question 4
 
 
 
