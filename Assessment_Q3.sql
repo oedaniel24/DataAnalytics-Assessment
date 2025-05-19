@@ -29,9 +29,9 @@ LEFT JOIN
     plans_plan P ON P.id = S.plan_id
 WHERE
 
--- specifying only transactions that are either savings plan or investment plan
+-- specifying only transactions that are either a savings plan or an investment plan
     (P.is_a_fund = 1 OR P.is_regular_savings = 1)
     
---  Specifying only active accounts (savings or investments) with no transactions in the last 1 year (365 days) .
+--  Specifying only active accounts (savings or investments) with no transactions in the last 1 year (365 days).
     AND
     DATEDIFF(CURDATE(), S.transaction_date) >  365;
