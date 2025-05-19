@@ -1,43 +1,50 @@
--- Step 1: Get the latest transaction per owner
-WITH latest_transactions AS (
+-- Step 1: Get all active savings and investment accounts
+WITH active_accounts AS (
     SELECT
+        P.id AS plan_id,
         owner_id,
-        MAX(transaction_date) AS last_transaction_date
+        CASE
+            WHEN is_regular_savings = 1 THEN 'Savings'
+            WHEN is_a_fund = 1 THEN 'Investment'
+            ELSE 'Other'
+        END AS type
     FROM
-        savings_savingsaccount
+        plans_plan P
+    JOIN
+        users_customuser U ON P.owner_id = U.id
+    WHERE
+        (P.is_regular_savings = 1 OR P.is_a_fund = 1)
+        AND U.is_active = 1
+),
+-- Step 2: Find the latest transaction date for each account, if any
+latest_transactions AS (
+    SELECT
+        S.plan_id,
+        MAX(S.transaction_date) AS last_transaction_date
+    FROM
+        savings_savingsaccount S
     GROUP BY
-        owner_id
+        S.plan_id
 )
-
--- Step 2: Join with the original tables to get full details
+-- Step 3: Combine account data with transaction data to identify inactive accounts
 SELECT 
-    P.id AS plan_id,
-    S.owner_id,
+    A.plan_id,
+    A.owner_id,
+    A.type,
+    COALESCE(LT.last_transaction_date, 'Never') AS last_transaction_date,
     CASE
-        WHEN P.is_regular_savings = 1 THEN 'Savings'
-        WHEN P.is_a_fund = 1 THEN 'Investment'
-    END AS types,
-    S.transaction_date AS last_transaction_date,
-
--- Calculating inactivity dates as the number of days between the last transaction date and the current date
-    DATEDIFF(CURDATE(), S.transaction_date) AS inactivity_days 
+        WHEN LT.last_transaction_date IS NULL THEN 999 -- For accounts with no transactions ever
+        ELSE DATEDIFF(CURDATE(), LT.last_transaction_date)
+    END AS inactivity_days
 FROM
-    savings_savingsaccount S
-JOIN
-    latest_transactions LT ON S.owner_id = LT.owner_id AND S.transaction_date = LT.last_transaction_date
+    active_accounts A
 LEFT JOIN
-    plans_plan P ON P.id = S.plan_id
-LEFT JOIN
-	users_customuser U ON U.id = S.owner_id
+    latest_transactions LT ON A.plan_id = LT.plan_id
 WHERE
-
--- specifying only transactions that are either a savings plan or an investment plan
-    (P.is_a_fund = 1 OR P.is_regular_savings = 1)
-    
---  Specifying only active accounts
-	AND
-     U.is_active = 1
- 
---  Specifying only account transactions in the last 1 year (365 days).
-    AND
-    DATEDIFF(CURDATE(), S.transaction_date) >  365;
+    -- Either no transactions ever (LEFT JOIN resulted in NULL)
+    LT.last_transaction_date IS NULL
+    OR
+    -- Or last transaction is older than 365 days
+    DATEDIFF(CURDATE(), LT.last_transaction_date) > 365
+ORDER BY
+    inactivity_days DESC;
