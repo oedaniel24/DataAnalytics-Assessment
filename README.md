@@ -11,6 +11,35 @@ I had initially attempted to use joins and common table expressions to build the
 
 
 ## Question 2
+Created this query  in  2 steps, first was a  month analysis CTE that performed the following tasks:
+1. Time Period Identification:
+  a. Creates a month-year label by concatenating the month name and year from each transaction date
+  b. This produces groups like "January2024", "February2024", etc.
+
+2. Counts distinct users who had transactions in each month
+
+3. Transaction Frequency Calculation:
+  a. Counts unique transaction references (preventing duplicate counting)
+  b. Divides by the number of distinct customers to get average transactions per customer
+  c. This calculation represents how many transactions an average customer makes in that month
+
+4. Uses a CASE statement to assign categories based on the average transaction count:
+≥10 transactions → "High Frequency"
+3-9 transactions → "Medium Frequency"
+≤2 transactions → "Low Frequency"
+
+5. Data Source and Relationship:
+  a. Pulls transaction data from savings_savingsaccount table
+  b. Links to customer information using a LEFT JOIN to users_customuser
+  c. This preserves all transactions, even if user information might be incomplete
+
+6. Groups all metrics by the month-year identifier
+
+Second step, aggregated the query by category
+
+### Challenges
+I struggled to understand what was meant by per customer, per month, because the data covered multiple years. So I was unsure if I was to aggregate all the months across all the years at first
+
 
 
 
