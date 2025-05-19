@@ -1,5 +1,5 @@
 # DataAnalytics-Assessment
-This repository contain my submission for the Cowrywise Data Analyst assessment 
+This repository contains my submission for the Cowrywise Data Analyst assessment 
 
 ## Question 1
 I started by selecting from the users table (users_customuser) and giving it an alias U for brevity. For each user, I grabbed their ID and concatenated their first and last names to create a full name. And then, for each user in our main query, a subquery counts all the savings accounts by matching the owner_id column in the savings table to the current user's ID.  The same process is done for the investment plan.  After this,  subqueries  were applied to sum up all amounts for each product type;  the SUMS are wrapped in COALESCE functions to handle NULLs, and it is then rounded up to 2 decimal  places.
@@ -49,6 +49,24 @@ This query was built in three steps using 2 CTEs. The first CTE identifies all a
 
 
 ## Question 4
+The query starts by joining the users_customuser table with the savings_savingsaccount table:
+  a. Uses a LEFT JOIN to include all users, even those with no transactions.
+  b.Joins on the owner_id field to associate transactions with each customer.
+  c. Ensures every customer is accounted for, regardless of activity level.
+
+The query then computes relevant fields:
+  a. tenure_months: Uses TIMESTAMPDIFF(MONTH, U.date_joined, CURDATE()) to calculate how many full months have passed since the customer joined.
+  b. total_transactions: Uses COUNT(DISTINCT S.savings_id) to count the number of unique savings transactions per customer. This ensures that duplicates do not inflate transaction counts.
+  c. estimated_clv: Uses the formula (total_transactions / tenure_months) * 12 * 0.1 to estimate the customer's lifetime value:
+
+NULLIF(tenure_months, 0) is used to avoid division by zero errors for new users, and finally, the results are grouped by customer to aggregate transactions and tenure correctly and sorted by estimated clv.
+
+
+##  General Challenge
+While the provided hint was very helpful, a database schema with more information on the column descriptions might have made my life a bit easier
+
+
+
 
 
 
